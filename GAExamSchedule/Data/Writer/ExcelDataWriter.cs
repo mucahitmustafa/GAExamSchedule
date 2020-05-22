@@ -315,6 +315,7 @@ namespace GAExamSchedule.Data.Writer
                         {
                             string _newCellValue = "";
                             string _oldCellValue = _ws.Cells[_time + 1, _day + 1].Value.ToString();
+                            _oldCellValue = _oldCellValue.TrimEnd('\n');
 
                             string _sameCellCourseName = _oldCellValue.Substring(0, _oldCellValue.IndexOf("\n"));
                             string _sameCellGroupsName = _oldCellValue.Substring(_oldCellValue.LastIndexOf("\n")).Replace("\n", "");
@@ -327,13 +328,21 @@ namespace GAExamSchedule.Data.Writer
                             {
                                 _newCellValue += $"{_sameCellCourseName}\n";
                             }
+
                             if (!_sameCellRoomName.Equals(_room.Name))
                             {
-                                _newCellValue += $"{_sameCellRoomName} {_room.Name}\n";
+                                _newCellValue += $"{_sameCellRoomName} | {_room.Name}\n";
+                            } else
+                            {
+                                _newCellValue += $"{_sameCellRoomName}\n";
                             }
+                            
                             if (!_sameCellGroupsName.Equals(_groups_Name))
                             {
-                                _newCellValue += $"{_sameCellGroupsName} {_groups_Name}";
+                                _newCellValue += $"{_sameCellGroupsName} | {_groups_Name}";
+                            } else
+                            {
+                                _newCellValue += $"{_sameCellGroupsName}";
                             }
 
                             _ws.Cells[_time + 1, _day + 1].Value = _newCellValue;

@@ -14,7 +14,6 @@ namespace GAExamSchedule.Data.Reader
         private string PATH_EXCEL_DATA;
         private string FILENAME_ROOM = ConfigurationManager.AppSettings.Get("data.input.filename.rooms");
 
-        private const string COLUMN_NAME_ID = "ID";
         private const string COLUMN_NAME_NAME = "İsim";
         private const string COLUMN_NAME_CAPACITY = "Kapasite";
         private const string COLUMN_NAME_TYPE = "Tür";
@@ -22,7 +21,6 @@ namespace GAExamSchedule.Data.Reader
         private string _filePath;
         private List<Room> _rooms = new List<Room>();
 
-        private int _idColumnNumber = 0;
         private int _nameColumnNumber = 0;
         private int _capacityColumnNumber = 0;
         private int _typeColumnNumber = 0;
@@ -113,15 +111,17 @@ namespace GAExamSchedule.Data.Reader
 
                     FindColumnIndexes(result.Tables[0].Columns);
 
+                    int _roomId = 0;
                     foreach (DataRow row in result.Tables[0].Rows)
                     {
                         _rooms.Add(new Room
-                        {
-                            ID = int.Parse(row.ItemArray[_idColumnNumber].ToString()) - 1,
-                            Name = row.ItemArray[_nameColumnNumber].ToString(),
-                            Capacity = int.Parse(row.ItemArray[_capacityColumnNumber].ToString()),
-                            IsLab = row.ItemArray[_typeColumnNumber].ToString().Contains("Lab"),
-                        });
+                        (
+                            id: _roomId,
+                            name: row.ItemArray[_nameColumnNumber].ToString(),
+                            capacity: int.Parse(row.ItemArray[_capacityColumnNumber].ToString()),
+                            isLab: row.ItemArray[_typeColumnNumber].ToString().Contains("Lab")
+                        ));
+                        _roomId++;
                     }
                 }
             }
@@ -129,11 +129,9 @@ namespace GAExamSchedule.Data.Reader
 
         private void FindColumnIndexes(DataColumnCollection columnCollection)
         {
-            if ((_idColumnNumber == _nameColumnNumber) ||
-                (_idColumnNumber == _capacityColumnNumber) ||
-                (_idColumnNumber == _typeColumnNumber) ||
-                (_nameColumnNumber == _capacityColumnNumber) ||
+            if ((_nameColumnNumber == _capacityColumnNumber) ||
                 (_nameColumnNumber == _typeColumnNumber) ||
+
                 (_capacityColumnNumber == _typeColumnNumber))
             {
                 for (int i = 0; i < columnCollection.Count; i++)
@@ -141,9 +139,6 @@ namespace GAExamSchedule.Data.Reader
                     DataColumn column = columnCollection[i];
                     switch (column.ColumnName)
                     {
-                        case COLUMN_NAME_ID:
-                            _idColumnNumber = i;
-                            break;
                         case COLUMN_NAME_NAME:
                             _nameColumnNumber = i;
                             break;

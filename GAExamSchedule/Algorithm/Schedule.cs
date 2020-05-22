@@ -17,7 +17,7 @@ namespace GAExamSchedule.Algorithm
         public const int DAYS_COUNT = 5;
         public int day_Hours { get { return DAY_HOURS; } }
 
-        private const int NUMBER_OF_SCORES = 56;
+        private const int NUMBER_OF_SCORES = 50;
 
         public int NumberOfCrossoverPoints { get; set; }
         public int MutationSize { get; set; }
@@ -265,7 +265,7 @@ namespace GAExamSchedule.Algorithm
                 CourseClass _cc = it.Key;
                 Room _room = Configuration.GetInstance.GetRoomById(_roomId);
 
-                #region Score 1 (check for room overlapping of classes)                                                                          [+10]
+                #region Score 1 (check for room overlapping of classes)                                                                          [+7]
 
                 bool _overlapping = false;
                 for (int i = _dur - 1; i >= 0; i--)
@@ -278,7 +278,7 @@ namespace GAExamSchedule.Algorithm
                 }
 
                 if (!_overlapping)
-                    _score += 10;
+                    _score += 7;
 
                 Criteria[_ci + 0] = !_overlapping;
 
@@ -292,15 +292,15 @@ namespace GAExamSchedule.Algorithm
 
                 #endregion
 
-                #region Score 3 (does current room fair)                                                                                         [+5]
+                #region Score 3 (does current room fair)                                                                                         [+3]
 
                 Criteria[_ci + 2] = _cc.RequiresLab.Equals(_room.IsLab);
                 if (Criteria[_ci + 2])
-                    _score += 5;
+                    _score += 3;
 
                 #endregion
 
-                #region Score 4 and 5 and 6 (check for overlapping of classes for branches and student groups && same course exams in same time) [+8][+8][+10]
+                #region Score 4 and 5 and 6 (check for overlapping of classes for branches and student groups && same course exams in same time) [+5][+10][+10]
          
                 bool _bra = false, _gro = false, _sameExamsNotInSameTime = false;
                 for (int i = _numberOfRooms, t = (_day * _daySize + _time); i > 0; i--, t += DAY_HOURS)
@@ -315,21 +315,6 @@ namespace GAExamSchedule.Algorithm
                     for (int j = _dur - 1; j >= 0; j--)
                     {
                         List<CourseClass> cl = _slots[t + j];
-
-                        List<CourseClass> _courseClassesWithSameCourse = Configuration.GetInstance.GetCourseClassesWithCourse(_cc.Course);
-                        _courseClassesWithSameCourse.Remove(_cc);
-                        if (_courseClassesWithSameCourse.Count > 0)
-                        {
-                            foreach (CourseClass it_cc in _courseClassesWithSameCourse)
-                            {
-                                if (!_courseClassesOnSameTime.Contains(it_cc))
-                                {
-                                    if (!_sameExamsNotInSameTime && _cc.Course == it_cc.Course)
-                                        _sameExamsNotInSameTime = true;
-                                }
-                            }
-                        }
-
                         foreach (CourseClass it_cc in cl)
                         {
                             if (_cc != it_cc)
@@ -344,17 +329,31 @@ namespace GAExamSchedule.Algorithm
                                     goto total_overlap;
                             }
                         }
+
+                        List<CourseClass> _courseClassesWithSameCourse = Configuration.GetInstance.GetCourseClassesWithCourse(_cc.Course);
+                        _courseClassesWithSameCourse.Remove(_cc);
+                        if (_courseClassesWithSameCourse.Count > 0)
+                        {
+                            foreach (CourseClass it_cc in _courseClassesWithSameCourse)
+                            {
+                                if (!_courseClassesOnSameTime.Contains(it_cc))
+                                {
+                                    if (!_sameExamsNotInSameTime && _cc.Course == it_cc.Course)
+                                        _sameExamsNotInSameTime = true;
+                                }
+                            }
+                        }
                     }
                 }
 
             total_overlap:
 
                 if (!_bra)
-                    _score += 8;
+                    _score += 5;
                 Criteria[_ci + 3] = !_bra;
 
                 if (!_gro)
-                    _score += 8;
+                    _score += 10;
                 Criteria[_ci + 4] = !_gro;
 
                 if (!_sameExamsNotInSameTime)

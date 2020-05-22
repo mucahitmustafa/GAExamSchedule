@@ -15,7 +15,6 @@ namespace GAExamSchedule.Data.Reader
         private string PATH_EXCEL_DATA;
         private readonly string FILENAME_COURSE_CLASS = ConfigurationManager.AppSettings.Get("data.input.filename.courseClasses");
 
-        private const string COLUMN_NAME_ID = "ID";
         private const string COLUMN_NAME_COURSE = "Ders";
         private const string COLUMN_NAME_PROFESSOR = "Öğretim Görevlisi";
         private const string COLUMN_NAME_DURATION = "Süre";
@@ -23,13 +22,13 @@ namespace GAExamSchedule.Data.Reader
         private const string COLUMN_NAME_REQ_LAB = "Laboratuvar Gereksinimi (E - H)";
         private const string COLUMN_NAME_CAPACITY = "Öğrenci Sayısı";
         private const string COLUMN_NAME_DIFFICULTY = "Zorluk";
+        private const string COLUMN_NAME_ROOM_COUNT = "Sınıf Sayısı";
 
         private const string TEXT_BOOLEAN = "E";
 
         private string _filePath;
         private List<CourseClass> _courseClasses = new List<CourseClass>();
 
-        private int _idColumnNumber = 0;
         private int _courseColumnNumber = 0;
         private int _prelectorColumnNumber = 0;
         private int _durationColumnNumber = 0;
@@ -37,6 +36,7 @@ namespace GAExamSchedule.Data.Reader
         private int _reqLabColumnNumber = 0;
         private int _capacityColumnNumber = 0;
         private int _difficultyColumnNumber = 0;
+        private int _roomCountColumnNumber = 0;
 
         StudentGroupReader _studentGroupReader = new StudentGroupReader();
         PrelectorReader _prelectorReader = new PrelectorReader();
@@ -129,6 +129,7 @@ namespace GAExamSchedule.Data.Reader
 
                     FindColumnIndexes(result.Tables[0].Columns);
 
+                    int _ccId = 0;
                     foreach (DataRow row in result.Tables[0].Rows)
                     {
                         List<int> _groupIds = row.ItemArray[_groupsColumnNumber].ToString().Split(',').Select(int.Parse).ToList();
@@ -137,16 +138,23 @@ namespace GAExamSchedule.Data.Reader
                             _studentGroups.Add(_studentGroupReader.GetStudentGroupById(_id));
                         });
 
-                        _courseClasses.Add(new CourseClass
-                        (
-                            id: int.Parse(row.ItemArray[_idColumnNumber].ToString()),
-                            duration: int.Parse(row.ItemArray[_durationColumnNumber].ToString()),
-                            difficulty: int.Parse(row.ItemArray[_difficultyColumnNumber].ToString()),
-                            requiresLab: row.ItemArray[_reqLabColumnNumber].ToString().ToLower().Equals(TEXT_BOOLEAN),
-                            groups: _studentGroups,
-                            course: _courseReader.GetCourseById(int.Parse(row.ItemArray[_courseColumnNumber].ToString())),
-                            prelector: _prelectorReader.GetPrelectorById(int.Parse(row.ItemArray[_prelectorColumnNumber].ToString()))
-                        ));
+                        int _roomCount = int.Parse(row.ItemArray[_roomCountColumnNumber].ToString());
+                        if (_roomCount == 0) _roomCount = 1;
+                        for (int i = 0; i < _roomCount; i++)
+                        {
+                            _courseClasses.Add(new CourseClass
+                                (
+                                    id: _ccId,
+                                    duration: int.Parse(row.ItemArray[_durationColumnNumber].ToString()),
+                                    difficulty: int.Parse(row.ItemArray[_difficultyColumnNumber].ToString()),
+                                    requiresLab: row.ItemArray[_reqLabColumnNumber].ToString().ToLower().Equals(TEXT_BOOLEAN),
+                                    groups: _studentGroups,
+                                    course: _courseReader.GetCourseById(int.Parse(row.ItemArray[_courseColumnNumber].ToString())),
+                                    prelector: _prelectorReader.GetPrelectorById(int.Parse(row.ItemArray[_prelectorColumnNumber].ToString())),
+                                    roomCount: _roomCount
+                                ));
+                            _ccId++;
+                        }
                     }
                 }
             }
@@ -154,49 +162,46 @@ namespace GAExamSchedule.Data.Reader
 
         private void FindColumnIndexes(DataColumnCollection columnCollection)
         {
-            if ((_idColumnNumber == _courseColumnNumber) ||
-                (_idColumnNumber == _prelectorColumnNumber) ||
-                (_idColumnNumber == _durationColumnNumber) ||
-                (_idColumnNumber == _groupsColumnNumber) ||
-                (_idColumnNumber == _reqLabColumnNumber) ||
-                (_idColumnNumber == _capacityColumnNumber) ||
-                (_idColumnNumber == _difficultyColumnNumber) ||
-
-                (_courseColumnNumber == _prelectorColumnNumber) ||
+            if ((_courseColumnNumber == _prelectorColumnNumber) ||
                 (_courseColumnNumber == _durationColumnNumber) ||
                 (_courseColumnNumber == _groupsColumnNumber) ||
                 (_courseColumnNumber == _reqLabColumnNumber) ||
                 (_courseColumnNumber == _capacityColumnNumber) ||
                 (_courseColumnNumber == _difficultyColumnNumber) ||
+                (_courseColumnNumber == _roomCountColumnNumber) ||
 
                 (_prelectorColumnNumber == _durationColumnNumber) ||
                 (_prelectorColumnNumber == _groupsColumnNumber) ||
                 (_prelectorColumnNumber == _reqLabColumnNumber) ||
                 (_prelectorColumnNumber == _capacityColumnNumber) ||
                 (_prelectorColumnNumber == _difficultyColumnNumber) ||
+                (_prelectorColumnNumber == _roomCountColumnNumber) ||
 
                 (_durationColumnNumber == _groupsColumnNumber) ||
                 (_durationColumnNumber == _reqLabColumnNumber) ||
                 (_durationColumnNumber == _capacityColumnNumber) ||
                 (_durationColumnNumber == _difficultyColumnNumber) ||
+                (_durationColumnNumber == _roomCountColumnNumber) ||
 
                 (_groupsColumnNumber == _reqLabColumnNumber) ||
                 (_groupsColumnNumber == _capacityColumnNumber) ||
                 (_groupsColumnNumber == _difficultyColumnNumber) ||
+                (_groupsColumnNumber == _roomCountColumnNumber) ||
 
                 (_reqLabColumnNumber == _capacityColumnNumber) ||
                 (_reqLabColumnNumber == _difficultyColumnNumber) ||
+                (_reqLabColumnNumber == _roomCountColumnNumber) ||
 
-                (_capacityColumnNumber == _difficultyColumnNumber))
+                (_capacityColumnNumber == _difficultyColumnNumber) ||
+                (_capacityColumnNumber == _roomCountColumnNumber) ||
+
+                (_difficultyColumnNumber == _roomCountColumnNumber))
             {
                 for (int i = 0; i < columnCollection.Count; i++)
                 {
                     DataColumn column = columnCollection[i];
                     switch (column.ColumnName)
                     {
-                        case COLUMN_NAME_ID:
-                            _idColumnNumber = i;
-                            break;
                         case COLUMN_NAME_COURSE:
                             _courseColumnNumber = i;
                             break;
@@ -217,6 +222,9 @@ namespace GAExamSchedule.Data.Reader
                             break;
                         case COLUMN_NAME_DIFFICULTY:
                             _difficultyColumnNumber = i;
+                            break;
+                        case COLUMN_NAME_ROOM_COUNT:
+                            _roomCountColumnNumber = i;
                             break;
                     }
                 }

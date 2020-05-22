@@ -23,7 +23,7 @@ namespace GAExamSchedule.Algorithm
         }
 
         public CourseClass(Prelector prelector, Course course, List<StudentGroup> groups, bool requiresLab,
-            int duration, int id, int difficulty)
+            int duration, int id, int difficulty, int roomCount)
         {
             Prelector = prelector;
             Course = course;
@@ -41,6 +41,8 @@ namespace GAExamSchedule.Algorithm
                 group.AddCourseClass(this);
                 StudentCount += group.StudentCount;
             }
+
+            StudentCount = StudentCount / roomCount;
         }
 
         
