@@ -308,7 +308,36 @@ namespace GAExamSchedule.Data.Writer
                         }
                         _groups_Name = _groups_Name.Trim();
 
-                        _ws.Cells[_time + 1, _day + 1].Value = $"{_cc.Course.Name}\n{_room.Name}\n{_groups_Name}";
+                        if (_ws.Cells[_time + 1, _day + 1].Value == null || string.IsNullOrEmpty(_ws.Cells[_time + 1, _day + 1].Value.ToString()))
+                        {
+                            _ws.Cells[_time + 1, _day + 1].Value = $"{_cc.Course.Name}\n{_room.Name}\n{_groups_Name}";
+                        } else
+                        {
+                            string _newCellValue = "";
+                            string _oldCellValue = _ws.Cells[_time + 1, _day + 1].Value.ToString();
+
+                            string _sameCellCourseName = _oldCellValue.Substring(0, _oldCellValue.IndexOf("\n"));
+                            string _sameCellGroupsName = _oldCellValue.Substring(_oldCellValue.LastIndexOf("\n")).Replace("\n", "");
+                            string _sameCellRoomName = _oldCellValue.Replace(_sameCellCourseName, "").Replace(_sameCellGroupsName, "").Replace("\n", "");
+
+                            if (!_sameCellCourseName.Equals(_cc.Course.Name))
+                            {
+                                _newCellValue += $"{_sameCellCourseName} | {_cc.Course.Name}\n";
+                            } else
+                            {
+                                _newCellValue += $"{_sameCellCourseName}\n";
+                            }
+                            if (!_sameCellRoomName.Equals(_room.Name))
+                            {
+                                _newCellValue += $"{_sameCellRoomName} {_room.Name}\n";
+                            }
+                            if (!_sameCellGroupsName.Equals(_groups_Name))
+                            {
+                                _newCellValue += $"{_sameCellGroupsName} {_groups_Name}";
+                            }
+
+                            _ws.Cells[_time + 1, _day + 1].Value = _newCellValue;
+                        }
                         _ws.Cells[_time + 1, _day + 1].Style = _anyCellStyle;
 
                     // Merge Cells
@@ -378,7 +407,7 @@ namespace GAExamSchedule.Data.Writer
             {
                 ws.Cells[i + startRow, 0].Value = TIME_SPANS[0, i - 1];
                 ws.Cells[i + startRow, 0].Style = _headerStyle;
-                ws.Rows[i + startRow].Height = 4 * 226;
+                ws.Rows[i + startRow].Height = 5 * 250;
             }
 
             #endregion

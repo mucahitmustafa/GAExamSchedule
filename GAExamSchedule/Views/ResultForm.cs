@@ -223,8 +223,7 @@ namespace GAExamSchedule.Views
         {
             this.Cursor = Cursors.WaitCursor;
             btnStart.Text = "&Başlat";
-            btnPause.Text = "&Kaydet";
-            btnPause.Enabled = true;
+            btnPause.Enabled = false;
             btnStop.Enabled = false;
             btnStart.Enabled = true;
             btnPauseTimer.Enabled = false;

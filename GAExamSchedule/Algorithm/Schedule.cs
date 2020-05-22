@@ -86,15 +86,20 @@ namespace GAExamSchedule.Algorithm
         {
             Schedule newChromosome = new Schedule(this, true);
 
-            List<CourseClass> _ccS = Configuration.GetInstance.GetCourseClasses();
+            Random _rnd = new Random();
+            List<CourseClass> _ccS = Configuration.GetInstance.GetCourseClasses().OrderBy(x => x.Course.ID).ToList();
+            int _numberOfRooms = Configuration.GetInstance.GetNumberOfRooms();
+            int _day = 0, _time = 0;
             foreach (CourseClass _cc in _ccS)
             {
-                int _numberOfRooms = Configuration.GetInstance.GetNumberOfRooms();
                 int _dur = _cc.Duration;
-                Random _rnd = new Random();
-                int _day = _rnd.Next() % DAYS_COUNT;
                 int _room = _rnd.Next() % _numberOfRooms;
-                int _time = _rnd.Next() % (DAY_HOURS + 1 - _dur);
+                int _index = _ccS.IndexOf(_cc);
+                if (_index == 0 || _cc.Course != _ccS[_index - 1].Course)
+                {
+                    _day = _rnd.Next() % DAYS_COUNT;
+                    _time = _rnd.Next() % (DAY_HOURS + 1 - _dur);
+                }
                 int _pos = (_day * _numberOfRooms * DAY_HOURS) + (_room * DAY_HOURS) + _time;
 
                 for (int i = _dur - 1; i >= 0; i--)
@@ -173,12 +178,12 @@ namespace GAExamSchedule.Algorithm
                 return;
 
             int _numberOfClasses = _classes.Count;
-            int _size = _slots.Length;
-
             for (int i = MutationSize; i > 0; i--)
             {
                 int mpos = _rnd.Next() % _numberOfClasses;
                 KeyValuePair<CourseClass, int> it = _classes.ToList<KeyValuePair<CourseClass, int>>()[mpos];
+                List<KeyValuePair<CourseClass, int>> _classesWithSameCourse = _classes.Where(x => x.Key.Course == it.Key.Course).ToList();
+                if (_classesWithSameCourse.Contains(it)) _classesWithSameCourse.Remove(it);
 
                 int pos1 = it.Value;
                 CourseClass cc1 = it.Key;
@@ -206,6 +211,34 @@ namespace GAExamSchedule.Algorithm
                 }
 
                 _classes[cc1] = pos2;
+
+                if (_classesWithSameCourse.Count > 0)
+                {
+                    foreach(KeyValuePair<CourseClass, int> sameCourse in _classesWithSameCourse)
+                    {
+                        int _posOld = sameCourse.Value;
+                        int _newRoom = _rnd.Next() % nr;
+                        int _posNew = day * nr * DAY_HOURS + _newRoom * DAY_HOURS + time;
+
+                        for (int j = dur - 1; j >= 0; j--)
+                        {
+                            List<CourseClass> cl = _slots[_posOld + j];
+                            foreach (CourseClass It in cl)
+                            {
+                                if (It == sameCourse.Key)
+                                {
+                                    cl.Remove(It);
+                                    break;
+                                }
+                            }
+
+                            _slots[_posNew + j].Add(sameCourse.Key);
+                        }
+
+                        _classes[sameCourse.Key] = _posNew;
+                    }
+                    
+                }
             }
             
             CalculateFitness();
@@ -272,6 +305,13 @@ namespace GAExamSchedule.Algorithm
                 bool _bra = false, _gro = false, _sameExamsNotInSameTime = false;
                 for (int i = _numberOfRooms, t = (_day * _daySize + _time); i > 0; i--, t += DAY_HOURS)
                 {
+                    List<CourseClass> _courseClassesOnSameTime = new List<CourseClass>();
+                    for (int j = 0; j < _numberOfRooms; j++)
+                    {
+                        int _roomChangeIndex = (DAYS_COUNT * DAY_HOURS) * j;
+                        _courseClassesOnSameTime.AddRange(_slots[_time + _roomChangeIndex]);
+                    }
+
                     for (int j = _dur - 1; j >= 0; j--)
                     {
                         List<CourseClass> cl = _slots[t + j];
@@ -282,7 +322,7 @@ namespace GAExamSchedule.Algorithm
                         {
                             foreach (CourseClass it_cc in _courseClassesWithSameCourse)
                             {
-                                if (!cl.Contains(it_cc))
+                                if (!_courseClassesOnSameTime.Contains(it_cc))
                                 {
                                     if (!_sameExamsNotInSameTime && _cc.Course == it_cc.Course)
                                         _sameExamsNotInSameTime = true;
@@ -333,8 +373,15 @@ namespace GAExamSchedule.Algorithm
                     for (int j = 0; j < DAY_HOURS; j++)
                     {
                         if (_limitExceeded) break;
-                        List<CourseClass> courseClassesInTime = _slots[_day * _daySize + j];
-                        foreach (CourseClass cc_it in courseClassesInTime)
+
+                        List<CourseClass> _courseClassesOnSameDay = new List<CourseClass>();
+                        for (int k = 0; k < _numberOfRooms; k++)
+                        {
+                            int _roomChangeIndex = (DAYS_COUNT * DAY_HOURS) * k;
+                            _courseClassesOnSameDay.AddRange(_slots[(_day * DAY_HOURS) + j + _roomChangeIndex]);
+                        }
+
+                        foreach (CourseClass cc_it in _courseClassesOnSameDay)
                         {
                             if (_limitExceeded) break;
                             if (!_courseClassesInThisDay.Contains(cc_it) && cc_it.StudentGroups.Contains(group))
