@@ -15,6 +15,7 @@ namespace GAExamSchedule
         #region Constants and Fields
 
         private string PARAMETER_CROSSOVER_PROBABILITY = ConfigurationManager.AppSettings.Get("algorithm.crossoverProbability");
+        private string PARAMETER_NUMBER_OF_CROSSOVER_POINTS = ConfigurationManager.AppSettings.Get("algorithm.numberOfCrossoverPoints");
         private string PARAMETER_MUTAITION_PROBABILITY = ConfigurationManager.AppSettings.Get("algorithm.mutationProbability");
         private string PARAMETER_MUTAITION_SIZE = ConfigurationManager.AppSettings.Get("algorithm.mutationSize");
         private string PARAMETER_NUMBER_OF_CHROMOSOMES = ConfigurationManager.AppSettings.Get("algorithm.numberOfChromosomes");
@@ -45,7 +46,7 @@ namespace GAExamSchedule
             {
                 ShowConfigData();
             } else if (string.IsNullOrEmpty(PARAMETER_CROSSOVER_PROBABILITY)  || string.IsNullOrEmpty(PARAMETER_MUTAITION_PROBABILITY) ||
-                        string.IsNullOrEmpty(PARAMETER_MUTAITION_SIZE) || string.IsNullOrEmpty(PARAMETER_NUMBER_OF_CHROMOSOMES))
+                        string.IsNullOrEmpty(PARAMETER_MUTAITION_SIZE) || string.IsNullOrEmpty(PARAMETER_NUMBER_OF_CHROMOSOMES) || string.IsNullOrEmpty(PARAMETER_NUMBER_OF_CROSSOVER_POINTS))
             {
                 ShowConfigGA();
             } else
@@ -133,6 +134,7 @@ namespace GAExamSchedule
             txt_mutationProbability.Text = PARAMETER_MUTAITION_PROBABILITY;
             txt_numberOfChromosomes.Text = PARAMETER_NUMBER_OF_CHROMOSOMES;
             txt_crossoverProbability.Text = PARAMETER_CROSSOVER_PROBABILITY;
+            txt_numberOfCrossoverPoints.Text = PARAMETER_NUMBER_OF_CROSSOVER_POINTS;
 
             HideAllPages();
             pnl_configGA.Visibility = Visibility.Visible;
@@ -211,9 +213,11 @@ namespace GAExamSchedule
                 if (!string.IsNullOrEmpty(txt_crossoverProbability.Text) && (int.Parse(txt_crossoverProbability.Text) != 0) &&
                     !string.IsNullOrEmpty(txt_mutationProbability.Text) && (int.Parse(txt_mutationProbability.Text) != 0) &&
                     !string.IsNullOrEmpty(txt_mutationSize.Text) && (int.Parse(txt_mutationSize.Text) != 0) &&
-                    !string.IsNullOrEmpty(txt_numberOfChromosomes.Text) && (int.Parse(txt_numberOfChromosomes.Text) != 0)) {
+                    !string.IsNullOrEmpty(txt_numberOfChromosomes.Text) && (int.Parse(txt_numberOfChromosomes.Text) != 0) &&
+                    !string.IsNullOrEmpty(txt_numberOfCrossoverPoints.Text) && (int.Parse(txt_numberOfCrossoverPoints.Text) != 0)) {
 
                     UpdateConfigKey("algorithm.crossoverProbability", txt_crossoverProbability.Text);
+                    UpdateConfigKey("algorithm.numberOfCrossoverPoints", txt_numberOfCrossoverPoints.Text);
                     UpdateConfigKey("algorithm.mutationProbability", txt_mutationProbability.Text);
                     UpdateConfigKey("algorithm.mutationSize", txt_mutationSize.Text);
                     UpdateConfigKey("algorithm.numberOfChromosomes", txt_numberOfChromosomes.Text);
@@ -222,6 +226,7 @@ namespace GAExamSchedule
                     PARAMETER_MUTAITION_PROBABILITY = txt_mutationProbability.Text;
                     PARAMETER_MUTAITION_SIZE = txt_mutationSize.Text;
                     PARAMETER_NUMBER_OF_CHROMOSOMES = txt_numberOfChromosomes.Text;
+                    PARAMETER_NUMBER_OF_CROSSOVER_POINTS = txt_numberOfCrossoverPoints.Text;
 
                     MessageBox.Show("Konfigürasyon parametreleri kaydedildi.", "", MessageBoxButton.OK, MessageBoxImage.Information);
                     ShowDashboard();

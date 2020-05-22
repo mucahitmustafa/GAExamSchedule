@@ -124,7 +124,7 @@ namespace GAExamSchedule.Views
 
         #endregion
 
-        #region Public Methods
+        #region Event Handler
         private void timerWorkingSet_Tick(object sender, EventArgs e)
         {
             lblGeneration.Text = Algorithm.Algorithm.GetInstance().GetCurrentGeneration().ToString();
@@ -180,6 +180,7 @@ namespace GAExamSchedule.Views
                     _state = ThreadState.Running;
                 }
             }
+            btnPauseTimer.Enabled = true;
         }
 
         private void btnPause_Click(object sender, EventArgs e)
@@ -210,6 +211,7 @@ namespace GAExamSchedule.Views
                 btnStop.Enabled = false;
             }
             this.Cursor = Cursors.Default;
+            btnPauseTimer.Enabled = false;
         }
 
         private void Save(Schedule schedule)
@@ -225,6 +227,7 @@ namespace GAExamSchedule.Views
             btnPause.Enabled = true;
             btnStop.Enabled = false;
             btnStart.Enabled = true;
+            btnPauseTimer.Enabled = false;
             if (_state == ThreadState.Running)
             {
                 _state = ThreadState.Stopped;
@@ -242,6 +245,19 @@ namespace GAExamSchedule.Views
                 Save(Algorithm.Algorithm.GetInstance().GetBestChromosome());
             }
             this.Cursor = Cursors.Default;
+        }
+        private void btnPauseTimer_Click(object sender, EventArgs e)
+        {
+            if (btnPauseTimer.Text == "Süreyi Duraklat")
+            {
+                timerWorkingSet.Stop();
+                btnPauseTimer.Text = "Süreyi Sürdür";
+            }
+            else
+            {
+                timerWorkingSet.Start();
+                btnPauseTimer.Text = "Süreyi Duraklat";
+            }
         }
 
         #endregion

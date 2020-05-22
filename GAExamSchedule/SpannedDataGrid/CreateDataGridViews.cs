@@ -27,8 +27,7 @@ namespace GAExamSchedule.SpannedDataGrid
         public Dictionary<int, DataGridView> DgvList { get { return dgvList; } }
 
         static Point LastDGV_Location;
-        static Point LastLabel_Location;
-        static int Distance = 20 + 362; // 362: data grid view height, 20: space
+        static int Distance = 20 + 582; // 362: data grid view height, 20: space
 
         #endregion
 
@@ -41,13 +40,13 @@ namespace GAExamSchedule.SpannedDataGrid
             _resultWindow = rFrm;
             roomList = rooms;
             LastDGV_Location = new Point(12, 25);
-            LastLabel_Location = new Point(12, 7);
             Create_FirstTime();
 
             foreach (KeyValuePair<int, DataGridView> kvp in DgvList)
             {
                 _resultWindow.Controls["pnlRooms"].Controls.Add(kvp.Value);
             }
+            _resultWindow.Controls["pnlRooms"].Height -= 70;
         }
 
         ~CreateDataGridViews()
@@ -72,13 +71,13 @@ namespace GAExamSchedule.SpannedDataGrid
                 dgvList.Add(ri.Key, Standard_dgv(LastDGV_Location, "dgv_" + ri.Value.ID.ToString(), _headerText));
                 dgvList[ri.Key].ClearSelection();
                 LastDGV_Location.Y += Distance;
-                LastLabel_Location.Y = LastDGV_Location.Y - 18;
             }
         }
 
         private DataGridView Standard_dgv(Point location, string Name, string headerText)
         {
             DataGridView dgv = new DataGridView();
+            dgv.ScrollBars = ScrollBars.None;
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
@@ -175,11 +174,11 @@ namespace GAExamSchedule.SpannedDataGrid
             dgv.RowHeadersBorderStyle = DataGridViewHeaderBorderStyle.Sunken;
             dgv.RowHeadersVisible = false;
             dgv.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.DisableResizing;
-            dgv.RowTemplate.Height = 35;
+            dgv.RowTemplate.Height = 60;
             dgv.RowTemplate.Resizable = DataGridViewTriState.False;
             dgv.CausesValidation = true;
             dgv.SelectionMode = DataGridViewSelectionMode.RowHeaderSelect;
-            dgv.Size = new Size(748, 362);
+            dgv.Size = new Size(748, 582);
             dgv.ReadOnly = true;
             dgv.RightToLeft = RightToLeft.No;
             dgv.CellContentClick += new DataGridViewCellEventHandler(dgv_CellContentClick);

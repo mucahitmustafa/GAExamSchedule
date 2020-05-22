@@ -17,7 +17,7 @@ namespace GAExamSchedule.Algorithm
         public const int DAYS_COUNT = 5;
         public int day_Hours { get { return DAY_HOURS; } }
 
-        private const int NUMBER_OF_SCORES = 50;
+        private const int NUMBER_OF_SCORES = 56;
 
         public int NumberOfCrossoverPoints { get; set; }
         public int MutationSize { get; set; }
@@ -226,13 +226,13 @@ namespace GAExamSchedule.Algorithm
                 int _day = _pos / _daySize;
                 int _time = _pos % _daySize;
                 int _roomId = _time / DAY_HOURS;
-                _time = _time % DAY_HOURS;
+                _time %= DAY_HOURS;
                 int _dur = it.Key.Duration;
 
                 CourseClass _cc = it.Key;
                 Room _room = Configuration.GetInstance.GetRoomById(_roomId);
 
-                #region Score 1 (check for room overlapping of classes)  [+10]
+                #region Score 1 (check for room overlapping of classes)                                                                          [+10]
 
                 bool _overlapping = false;
                 for (int i = _dur - 1; i >= 0; i--)
@@ -251,7 +251,7 @@ namespace GAExamSchedule.Algorithm
 
                 #endregion
 
-                #region Score 2 (does current room have enough seats)  [+10]
+                #region Score 2 (does current room have enough seats)                                                                            [+10]
 
                 Criteria[_ci + 1] = _room.Capacity >= _cc.StudentCount;
                 if (Criteria[_ci + 1])
@@ -259,7 +259,7 @@ namespace GAExamSchedule.Algorithm
 
                 #endregion
 
-                #region Score 3 (does current room fair)  [+5]
+                #region Score 3 (does current room fair)                                                                                         [+5]
 
                 Criteria[_ci + 2] = _cc.RequiresLab.Equals(_room.IsLab);
                 if (Criteria[_ci + 2])
@@ -267,28 +267,40 @@ namespace GAExamSchedule.Algorithm
 
                 #endregion
 
-                #region Score 4 and 5 and 6 (check overlapping of classes for prelectors and student groups and sequential student groups)  [+8][+8][+4]
-
-                bool _pre = false, _gro = false, _seqGro = false;
+                #region Score 4 and 5 and 6 (check for overlapping of classes for branches and student groups && same course exams in same time) [+8][+8][+10]
+         
+                bool _bra = false, _gro = false, _sameExamsNotInSameTime = false;
                 for (int i = _numberOfRooms, t = (_day * _daySize + _time); i > 0; i--, t += DAY_HOURS)
                 {
                     for (int j = _dur - 1; j >= 0; j--)
                     {
                         List<CourseClass> cl = _slots[t + j];
+
+                        List<CourseClass> _courseClassesWithSameCourse = Configuration.GetInstance.GetCourseClassesWithCourse(_cc.Course);
+                        _courseClassesWithSameCourse.Remove(_cc);
+                        if (_courseClassesWithSameCourse.Count > 0)
+                        {
+                            foreach (CourseClass it_cc in _courseClassesWithSameCourse)
+                            {
+                                if (!cl.Contains(it_cc))
+                                {
+                                    if (!_sameExamsNotInSameTime && _cc.Course == it_cc.Course)
+                                        _sameExamsNotInSameTime = true;
+                                }
+                            }
+                        }
+
                         foreach (CourseClass it_cc in cl)
                         {
                             if (_cc != it_cc)
                             {
-                                if (!_pre && _cc.PrelectorOverlaps(it_cc))
-                                    _pre = true;
+                                if (!_bra && _cc.BranchsOverlaps(it_cc))
+                                    _bra = true;
 
                                 if (!_gro && _cc.GroupsOverlap(it_cc))
                                     _gro = true;
 
-                                if (!_seqGro && _cc.SequentialGroupsOverlap(it_cc))
-                                    _seqGro = true;
-
-                                if (_pre && _gro && _seqGro)
+                                if (_bra && _gro)
                                     goto total_overlap;
                             }
                         }
@@ -297,40 +309,48 @@ namespace GAExamSchedule.Algorithm
 
             total_overlap:
 
-                if (!_pre)
+                if (!_bra)
                     _score += 8;
-                Criteria[_ci + 3] = !_pre;
+                Criteria[_ci + 3] = !_bra;
 
                 if (!_gro)
                     _score += 8;
                 Criteria[_ci + 4] = !_gro;
 
-                if (!_seqGro)
-                    _score += 4;
-                Criteria[_ci + 5] = !_seqGro;
+                if (!_sameExamsNotInSameTime)
+                    _score += 10;
+                Criteria[_ci + 5] = !_sameExamsNotInSameTime;
 
                 #endregion
 
-                #region Score 7 (check course limit in one day for student groups)  [+3]
+                #region Score 7 (check difficulty limit in one day for student groups)                                                           [+3]
 
                 bool _limitExceeded = false;
                 foreach (StudentGroup group in _cc.StudentGroups)
                 {
-                    int hourInDay = 0;
+                    List<CourseClass> _courseClassesInThisDay = new List<CourseClass>();
+                    int _diffInDay = 0;
                     for (int j = 0; j < DAY_HOURS; j++)
                     {
+                        if (_limitExceeded) break;
                         List<CourseClass> courseClassesInTime = _slots[_day * _daySize + j];
                         foreach (CourseClass cc_it in courseClassesInTime)
                         {
-                            if (cc_it.StudentGroups.Contains(group)) hourInDay++;
+                            if (_limitExceeded) break;
+                            if (!_courseClassesInThisDay.Contains(cc_it) && cc_it.StudentGroups.Contains(group))
+                            {
+                                _courseClassesInThisDay.Add(cc_it);
+                                _diffInDay += cc_it.Difficulty;
+                            }
                         }
                     }
 
-                    if (hourInDay > group.MaxHourInDay)
+                    if (!_limitExceeded && _diffInDay > group.MaxDifficultyInDay)
                     {
                         _limitExceeded = true;
                         break;
                     }
+                    if (_limitExceeded) break;
                 }
 
                 if (!_limitExceeded)
@@ -342,7 +362,7 @@ namespace GAExamSchedule.Algorithm
 
                 #endregion
 
-                #region Score 8 (check this class day in prelector schedule table)  [+2]
+                #region Score 8 (check this exam day in prelector schedule table)                                                                [+2]
 
                 Criteria[_ci + 7] = true;
                 for (int i = 0; i < _dur; i++)
@@ -358,7 +378,7 @@ namespace GAExamSchedule.Algorithm
 
                 #endregion
 
-                _ci += NUMBER_OF_SCORES;
+                _ci += 8;
             }
 
             Fitness = (float)_score / (Configuration.GetInstance.GetNumberOfCourseClasses() * NUMBER_OF_SCORES);
@@ -374,7 +394,7 @@ namespace GAExamSchedule.Algorithm
 
             public void NewBestChromosome(Schedule newChromosome, bool showGraphical)
             {
-                showGraphical = newChromosome.Fitness > 0.9;
+                showGraphical = newChromosome.Fitness > 0.7;
                 if (_window.DgvList.Count > 0)
                     _window.SetSchedule(newChromosome, showGraphical);
             }

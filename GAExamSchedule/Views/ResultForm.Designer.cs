@@ -40,6 +40,7 @@
             this.btnStop = new System.Windows.Forms.Button();
             this.btnPause = new System.Windows.Forms.Button();
             this.btnStart = new System.Windows.Forms.Button();
+            this.btnPauseTimer = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // pnlRooms
@@ -152,11 +153,23 @@
             this.btnStart.UseVisualStyleBackColor = true;
             this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
             // 
+            // btnPauseTimer
+            // 
+            this.btnPauseTimer.Enabled = false;
+            this.btnPauseTimer.Location = new System.Drawing.Point(596, 11);
+            this.btnPauseTimer.Name = "btnPauseTimer";
+            this.btnPauseTimer.Size = new System.Drawing.Size(158, 23);
+            this.btnPauseTimer.TabIndex = 30;
+            this.btnPauseTimer.Text = "Süreyi Duraklat";
+            this.btnPauseTimer.UseVisualStyleBackColor = true;
+            this.btnPauseTimer.Click += new System.EventHandler(this.btnPauseTimer_Click);
+            // 
             // ResultForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(795, 611);
+            this.Controls.Add(this.btnPauseTimer);
             this.Controls.Add(this.lblTime);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.lblGeneration);
@@ -189,5 +202,6 @@
         private System.Windows.Forms.Button btnStop;
         private System.Windows.Forms.Button btnPause;
         private System.Windows.Forms.Button btnStart;
+        private System.Windows.Forms.Button btnPauseTimer;
     }
 }

@@ -19,6 +19,7 @@ namespace GAExamSchedule.Data.Reader
         private const string COLUMN_NAME_DEGREE = "Sınıf";
         private const string COLUMN_NAME_COUNT = "Öğrenci Sayısı";
         private const string COLUMN_NAME_MAX_HOUR = "Günlük Max Ders Saati";
+        private const string COLUMN_NAME_MAX_DIFF = "Günlük Max Sınav Zorluğu";
 
         private string _filePath;
         private List<StudentGroup> _studentGroups = new List<StudentGroup>();
@@ -28,6 +29,7 @@ namespace GAExamSchedule.Data.Reader
         private int _degreeColumnNumber = 0;
         private int _countColumnNumber = 0;
         private int _maxHourColumnNumber = 0;
+        private int _maxDiffColumnNumber = 0;
 
         #endregion
 
@@ -57,6 +59,19 @@ namespace GAExamSchedule.Data.Reader
             CollectStudentGroups();
 
             return _studentGroups;
+        }
+
+        public List<string> GetBranchs()
+        {
+            CollectStudentGroups();
+            
+            List<string> _branchs = new List<string>();
+
+            _studentGroups.ForEach(g => {
+                if (!_branchs.Contains(g.Branch)) _branchs.Add(g.Branch);
+            });
+
+            return _branchs;
         }
 
         public StudentGroup GetStudentGroupByName(string name)
@@ -136,7 +151,8 @@ namespace GAExamSchedule.Data.Reader
                             branch: row.ItemArray[_branchColumnNumber].ToString(),
                             degree: int.Parse(row.ItemArray[_degreeColumnNumber].ToString()),
                             count: int.Parse(row.ItemArray[_countColumnNumber].ToString()),
-                            maxHourInDay: int.Parse(row.ItemArray[_maxHourColumnNumber].ToString())
+                            maxHourInDay: int.Parse(row.ItemArray[_maxHourColumnNumber].ToString()),
+                            maxDiffInDay: int.Parse(row.ItemArray[_maxDiffColumnNumber].ToString())
                         ));
                     }
                 }
@@ -149,12 +165,21 @@ namespace GAExamSchedule.Data.Reader
                 (_idColumnNumber == _degreeColumnNumber) ||
                 (_idColumnNumber == _countColumnNumber) ||
                 (_idColumnNumber == _maxHourColumnNumber) ||
+                (_idColumnNumber == _maxDiffColumnNumber) ||
+
                 (_branchColumnNumber == _degreeColumnNumber) ||
                 (_branchColumnNumber == _countColumnNumber) ||
                 (_branchColumnNumber == _maxHourColumnNumber) ||
+                (_branchColumnNumber == _maxDiffColumnNumber) ||
+
                 (_degreeColumnNumber == _countColumnNumber) ||
                 (_degreeColumnNumber == _maxHourColumnNumber) ||
-                (_countColumnNumber == _maxHourColumnNumber))
+                (_degreeColumnNumber == _maxDiffColumnNumber) ||
+
+                (_countColumnNumber == _maxHourColumnNumber) ||
+                (_degreeColumnNumber == _maxDiffColumnNumber) ||
+
+                (_countColumnNumber == _maxDiffColumnNumber))
             {
                 for (int i = 0; i < columnCollection.Count; i++)
                 {
@@ -175,6 +200,9 @@ namespace GAExamSchedule.Data.Reader
                             break;
                         case COLUMN_NAME_MAX_HOUR:
                             _maxHourColumnNumber = i;
+                            break;
+                        case COLUMN_NAME_MAX_DIFF:
+                            _maxDiffColumnNumber = i;
                             break;
                     }
                 }

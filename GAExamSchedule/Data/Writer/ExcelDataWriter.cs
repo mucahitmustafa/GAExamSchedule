@@ -18,7 +18,7 @@ namespace GAExamSchedule.Data.Writer
 
         private const string SHEET_NAME_ROOMS = "Sınıflar";
         private const string SHEET_NAME_GROUPS = "Öğrenciler";
-        private const string SHEET_NAME_PRELECTORS = "Öğretim Görevlileri";
+        private const string SHEET_NAME_BRANCHS = "Bölümler";
 
         private const int TABLE_ROW_SPACING = 2;
 
@@ -48,7 +48,6 @@ namespace GAExamSchedule.Data.Writer
 
         int _excelFileCount = 1;
 
-        PrelectorReader _prelectorReader = new PrelectorReader();
         RoomReader _roomReader = new RoomReader();
         StudentGroupReader _studentGroupReader = new StudentGroupReader();
 
@@ -118,7 +117,7 @@ namespace GAExamSchedule.Data.Writer
 
             SaveRoomsSchedule(schedule, courseClasses);
             SaveGroupsSchedule(schedule, courseClasses);
-            SavePrelectorsSchedule(schedule, courseClasses);
+            SaveBranchsSchedule(schedule, courseClasses);
 
             if (!PATH_EXCEL_OUTPUT_DATA.EndsWith("/")) PATH_EXCEL_OUTPUT_DATA = PATH_EXCEL_OUTPUT_DATA + "/";
             _ef.Save($"{PATH_EXCEL_OUTPUT_DATA}{FILENAME_OUTPUT}");
@@ -260,42 +259,42 @@ namespace GAExamSchedule.Data.Writer
             }
         }
 
-        private void SavePrelectorsSchedule(Schedule schedule, List<KeyValuePair<CourseClass, int>> courseClasses)
+        private void SaveBranchsSchedule(Schedule schedule, List<KeyValuePair<CourseClass, int>> courseClasses)
         {
-            List<Prelector> _allPrelectors = _prelectorReader.GetPrelectors();
-            int _sheetCount = ((int)_allPrelectors.Count / 10) + 1;
+            List<string> _allBranchs = _studentGroupReader.GetBranchs();
+            int _sheetCount = ((int)_allBranchs.Count / 10) + 1;
 
-            int _prelectorsPosition = 0;
+            int _branchsPosition = 0;
             for (int i = 1; i <= _sheetCount; i++)
             {
-                int _prelectorCountInThisSheet = Math.Min(10, _allPrelectors.Count - _prelectorsPosition);
-                if (_prelectorCountInThisSheet == 0) break;
+                int _branchCountInThisSheet = Math.Min(10, _allBranchs.Count - _branchsPosition);
+                if (_branchCountInThisSheet == 0) break;
 
-                string _sheetName = SHEET_NAME_PRELECTORS + (i > 1 ? $" {i}" : "");
+                string _sheetName = SHEET_NAME_BRANCHS + (i > 1 ? $" {i}" : "");
                 ExcelWorksheet _ws = CreateWorksheet(_sheetName);
-                List<Prelector> _prelectors = _allPrelectors.GetRange(_prelectorsPosition, _prelectorCountInThisSheet);
-                _prelectorsPosition += _prelectorCountInThisSheet;
+                List<string> _branchs = _allBranchs.GetRange(_branchsPosition, _branchCountInThisSheet);
+                _branchsPosition += _branchCountInThisSheet;
                 
                 int _startRow = 0;
-                _prelectors.ForEach(p =>
+                _branchs.ForEach(b =>
                 {
-                    CreateTable(_ws, p.Name, _startRow);
+                    CreateTable(_ws, b, _startRow);
                     _startRow += TIME_SPANS.Length + 1 + TABLE_ROW_SPACING;
                 });
 
                 int _numberOfRooms = Algorithm.Configuration.GetInstance.GetNumberOfRooms();
                 int _daySize = schedule.day_Hours * _numberOfRooms;
 
-                _prelectors.ForEach(prof =>
+                _branchs.ForEach(branch =>
                 {
 
-                    foreach (KeyValuePair<CourseClass, int> it in courseClasses.Where(cc => cc.Key.Prelector.Equals(prof)).ToList())
+                    foreach (KeyValuePair<CourseClass, int> it in courseClasses.Where(cc => cc.Key.StudentGroups.Where(g => g.Branch.Equals(branch)).Any()).ToList())
                     {
                         int _pos = it.Value;
                         int _day = _pos / _daySize;
                         int _time = _pos % _daySize;
                         int _roomId = _time / schedule.day_Hours;
-                        _startRow = _prelectors.IndexOf(prof) * (TABLE_ROW_SPACING + 1 + TIME_SPANS.Length);
+                        _startRow = _branchs.IndexOf(branch) * (TABLE_ROW_SPACING + 1 + TIME_SPANS.Length);
                         _time = (_time % schedule.day_Hours) + _startRow;
                         int _dur = it.Key.Duration;
 
@@ -342,12 +341,12 @@ namespace GAExamSchedule.Data.Writer
             ExcelWorksheet ws = _ef.Worksheets.Add(name);
 
             ws.Columns[0].Width = 30 * 226;
-            ws.Columns[1].Width = 28 * 226;
-            ws.Columns[2].Width = 28 * 226;
-            ws.Columns[3].Width = 28 * 226;
-            ws.Columns[4].Width = 28 * 226;
-            ws.Columns[5].Width = 28 * 226;
-            ws.Columns[6].Width = 28 * 226;
+            ws.Columns[1].Width = 30 * 226;
+            ws.Columns[2].Width = 30 * 226;
+            ws.Columns[3].Width = 30 * 226;
+            ws.Columns[4].Width = 30 * 226;
+            ws.Columns[5].Width = 30 * 226;
+            ws.Columns[6].Width = 30 * 226;
 
             return ws;
         }

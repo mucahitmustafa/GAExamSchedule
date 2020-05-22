@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace GAExamSchedule.Algorithm
 {
@@ -40,6 +41,11 @@ namespace GAExamSchedule.Algorithm
 
         public void InitializeDate(List<Prelector> prelectors, List<StudentGroup> studentGroups, List<Course> courses, List<Room> rooms, List<CourseClass> courseClasses)
         {
+            _prelectors.Clear();
+            _studentGroups.Clear();
+            _courses.Clear();
+            _rooms.Clear();
+            _courseClasses.Clear();
             prelectors.ForEach(_val =>
             {
                 _prelectors.Add(_val.ID, _val);
@@ -101,6 +107,10 @@ namespace GAExamSchedule.Algorithm
         public int GetNumberOfRooms() { return (int)_rooms.Count; }
 
         public List<CourseClass> GetCourseClasses() { return _courseClasses; }
+
+        public List<CourseClass> GetCourseClassesWithCourse(Course course) { 
+            return _courseClasses.Where(cc => cc.Course == course).ToList(); 
+        }
 
         public int GetNumberOfCourseClasses() { return (int)_courseClasses.Count; }
 

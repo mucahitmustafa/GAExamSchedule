@@ -9,6 +9,7 @@ namespace GAExamSchedule.Algorithm
         public string Branch { get; set; }
         public int Degree { get; set; }
         public int MaxHourInDay { get; set; }
+        public int MaxDifficultyInDay { get; set; }
         public int StudentCount { get; set; }
         public List<CourseClass> CourseClasses { get; set; }
 
@@ -17,7 +18,7 @@ namespace GAExamSchedule.Algorithm
 
         }
 
-        public StudentGroup(int id, string branch, int degree, int count, int maxHourInDay)
+        public StudentGroup(int id, string branch, int degree, int count, int maxHourInDay, int maxDiffInDay)
         {
             ID = id;
             Name = $"{branch} {degree}";
@@ -25,6 +26,7 @@ namespace GAExamSchedule.Algorithm
             Degree = degree;
             StudentCount = count;
             MaxHourInDay = maxHourInDay;
+            MaxDifficultyInDay = maxDiffInDay;
         }
 
         public void AddCourseClass(CourseClass courseClass)
