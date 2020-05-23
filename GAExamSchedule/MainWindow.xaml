@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GAExamSchedule"
         mc:Ignorable="d"
-        Title="GA Class Schedule" Height="530" Width="850">
+        Title="GA Exam Schedule" Height="530" Width="850">
 
     <StackPanel>
         <StackPanel x:Name="pnl_dashboard" Visibility="Visible" Height="500">

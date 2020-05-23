@@ -118,7 +118,21 @@ namespace GAExamSchedule
             lbl_count_course.Content = _courses == null ? 0 : _courses.Count;
             lbl_count_prelector.Content = _prelectors == null ? 0 : _prelectors.Count;
             lbl_count_group.Content = _studentGroups == null ? 0 : _studentGroups.Count;
-            lbl_count_courseClass.Content = _courseClasses == null ? 0 : _courseClasses.Count;
+
+            int _courseClassesCount = 0;
+
+            List<string> _calculatedCcs = new List<string>();
+            foreach(CourseClass cc in _courseClasses)
+            {
+                string _ccKey = $"{cc.Course.ID}-{cc.Prelector.ID}-{cc.StudentGroups.Count}-{cc.StudentGroups[0].ID}";
+                if (!_calculatedCcs.Contains(_ccKey))
+                {
+                    _calculatedCcs.Add(_ccKey);
+                    _courseClassesCount++;
+                }
+            }
+
+            lbl_count_courseClass.Content = _courseClassesCount;
         }
 
         private void HideAllPages()
