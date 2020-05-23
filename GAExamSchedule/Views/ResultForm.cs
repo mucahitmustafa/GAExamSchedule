@@ -16,6 +16,14 @@ namespace GAExamSchedule.Views
     {
         #region Constants and Fields
 
+        private string PARAMETER_CROSSOVER_PROBABILITY = System.Configuration.ConfigurationManager.AppSettings.Get("algorithm.crossoverProbability");
+        private string PARAMETER_NUMBER_OF_CROSSOVER_POINTS = System.Configuration.ConfigurationManager.AppSettings.Get("algorithm.numberOfCrossoverPoints");
+        private string PARAMETER_MUTAITION_PROBABILITY = System.Configuration.ConfigurationManager.AppSettings.Get("algorithm.mutationProbability");
+        private string PARAMETER_MUTAITION_SIZE = System.Configuration.ConfigurationManager.AppSettings.Get("algorithm.mutationSize");
+        private string PARAMETER_NUMBER_OF_CHROMOSOMES = System.Configuration.ConfigurationManager.AppSettings.Get("algorithm.numberOfChromosomes");
+        private string PARAMETER_TRACK_BEST = System.Configuration.ConfigurationManager.AppSettings.Get("algorithm.trackBest");
+        private string PARAMETER_REPLACE_BY_GENERATION = System.Configuration.ConfigurationManager.AppSettings.Get("algorithm.replaceByGeneration");
+
         public static CreateDataGridViews _createGridView;
         public static Algorithm.Algorithm _algorithm;
         public static ThreadState _state = new ThreadState();
@@ -67,11 +75,13 @@ namespace GAExamSchedule.Views
             if (Algorithm.Configuration.GetInstance.GetNumberOfRooms() > 0)
             {
                 _createGridView = new CreateDataGridViews(Configuration.GetInstance.Rooms, this);
-                Schedule prototype = new Schedule(5, 5, 90, 10);
+                Schedule prototype = new Schedule(int.Parse(PARAMETER_NUMBER_OF_CROSSOVER_POINTS), int.Parse(PARAMETER_MUTAITION_SIZE), 
+                                                    int.Parse(PARAMETER_CROSSOVER_PROBABILITY), int.Parse(PARAMETER_MUTAITION_PROBABILITY));
                 Schedule.ScheduleObserver sso = new Schedule.ScheduleObserver();
                 sso.SetWindow(_createGridView);
 
-                _algorithm = new Algorithm.Algorithm(1000, 180, 50, prototype, sso);
+                _algorithm = new Algorithm.Algorithm(int.Parse(PARAMETER_NUMBER_OF_CHROMOSOMES), int.Parse(PARAMETER_REPLACE_BY_GENERATION), 
+                                                        int.Parse(PARAMETER_TRACK_BEST), prototype, sso);
 
                 _state = ThreadState.Unstarted;
                 timerWorkingSet.Start();
