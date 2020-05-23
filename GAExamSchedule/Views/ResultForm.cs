@@ -1,6 +1,7 @@
 ﻿using GAExamSchedule.Algorithm;
 using GAExamSchedule.Data.Reader;
 using GAExamSchedule.SpannedDataGrid;
+using StatisticsRecorder;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,12 +16,15 @@ namespace GAExamSchedule.Views
     {
         #region Constants and Fields
 
+        private string PATH_EXCEL_OUTPUT_DATA;
+
         public static CreateDataGridViews _createGridView;
         public static Algorithm.Algorithm _algorithm;
         public static ThreadState _state = new ThreadState();
         public static Setting _setting = new Setting(Environment.ProcessorCount > 1);
 
         Data.Writer.ExcelDataWriter _excelWriter = new Data.Writer.ExcelDataWriter();
+        StatisticsRecorderBase _statisticsRecorder;
 
         CourseClassReader courseClassReader = new CourseClassReader();
         CourseReader courseReader = new CourseReader();
@@ -44,6 +48,8 @@ namespace GAExamSchedule.Views
         public ResultForm()
         {
             InitializeComponent();
+            PATH_EXCEL_OUTPUT_DATA = System.Configuration.ConfigurationManager.AppSettings.Get("data.output.location");
+            if (!PATH_EXCEL_OUTPUT_DATA.EndsWith("/") && !PATH_EXCEL_OUTPUT_DATA.EndsWith("\\")) PATH_EXCEL_OUTPUT_DATA = PATH_EXCEL_OUTPUT_DATA + "\\";
         }
 
         private void ResultForm_Load(object sender, EventArgs e)
@@ -156,6 +162,7 @@ namespace GAExamSchedule.Views
 
         private void btnStart_Click(object sender, EventArgs e)
         {
+            _statisticsRecorder = new StatisticsRecorderBase();
             if (_state == ThreadState.Unstarted || _state == ThreadState.Stopped)
             {
                 if (Algorithm.Algorithm.GetInstance().Start())
@@ -181,6 +188,7 @@ namespace GAExamSchedule.Views
                 }
             }
             btnPauseTimer.Enabled = true;
+            statisticsTimer.Start();
         }
 
         private void btnPause_Click(object sender, EventArgs e)
@@ -212,6 +220,7 @@ namespace GAExamSchedule.Views
             }
             this.Cursor = Cursors.Default;
             btnPauseTimer.Enabled = false;
+            statisticsTimer.Stop();
         }
 
         private void Save(Schedule schedule)
@@ -244,6 +253,7 @@ namespace GAExamSchedule.Views
                 Save(Algorithm.Algorithm.GetInstance().GetBestChromosome());
             }
             this.Cursor = Cursors.Default;
+            statisticsTimer.Stop();
         }
         private void btnPauseTimer_Click(object sender, EventArgs e)
         {
@@ -259,6 +269,28 @@ namespace GAExamSchedule.Views
             }
         }
 
+        private void statisticsTimer_Tick(object sender, EventArgs e)
+        {
+            int _timeSec = ConvertTimeToSeconds(lblTime.Text);
+            int _generation = int.Parse(lblGeneration.Text);
+            float _fitness = float.Parse(lblFitness.Text);
+
+            _statisticsRecorder.InsertData(_timeSec, _generation, _fitness);
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private int ConvertTimeToSeconds(string timeStr)
+        {
+            string _hour = timeStr.Substring(0, timeStr.IndexOf(":")).Replace(":", "");
+            string _sec = timeStr.Substring(timeStr.LastIndexOf(":")).Replace(":", "");
+            string _min = timeStr.Substring(timeStr.IndexOf(":"), timeStr.LastIndexOf(":")).Replace(":", "");
+
+            return int.Parse(_sec) + (int.Parse(_min) * 60) + (int.Parse(_hour) * 3600);
+        }
+        
         #endregion
 
     }

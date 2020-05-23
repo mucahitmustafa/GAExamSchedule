@@ -41,6 +41,7 @@
             this.btnPause = new System.Windows.Forms.Button();
             this.btnStart = new System.Windows.Forms.Button();
             this.btnPauseTimer = new System.Windows.Forms.Button();
+            this.statisticsTimer = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // pnlRooms
@@ -164,6 +165,11 @@
             this.btnPauseTimer.UseVisualStyleBackColor = true;
             this.btnPauseTimer.Click += new System.EventHandler(this.btnPauseTimer_Click);
             // 
+            // statisticsTimer
+            // 
+            this.statisticsTimer.Interval = 1000;
+            this.statisticsTimer.Tick += new System.EventHandler(this.statisticsTimer_Tick);
+            // 
             // ResultForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -203,5 +209,6 @@
         private System.Windows.Forms.Button btnPause;
         private System.Windows.Forms.Button btnStart;
         private System.Windows.Forms.Button btnPauseTimer;
+        private System.Windows.Forms.Timer statisticsTimer;
     }
 }

@@ -223,10 +223,10 @@ namespace GAExamSchedule
                     UpdateConfigKey("algorithm.numberOfChromosomes", txt_numberOfChromosomes.Text);
 
                     PARAMETER_CROSSOVER_PROBABILITY = txt_crossoverProbability.Text;
+                    PARAMETER_NUMBER_OF_CROSSOVER_POINTS = txt_numberOfCrossoverPoints.Text;
                     PARAMETER_MUTAITION_PROBABILITY = txt_mutationProbability.Text;
                     PARAMETER_MUTAITION_SIZE = txt_mutationSize.Text;
                     PARAMETER_NUMBER_OF_CHROMOSOMES = txt_numberOfChromosomes.Text;
-                    PARAMETER_NUMBER_OF_CROSSOVER_POINTS = txt_numberOfCrossoverPoints.Text;
 
                     MessageBox.Show("Konfigürasyon parametreleri kaydedildi.", "", MessageBoxButton.OK, MessageBoxImage.Information);
                     ShowDashboard();

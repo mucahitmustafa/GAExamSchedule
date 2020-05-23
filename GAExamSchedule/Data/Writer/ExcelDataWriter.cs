@@ -63,6 +63,7 @@ namespace GAExamSchedule.Data.Writer
         public ExcelDataWriter()
         {
             PATH_EXCEL_OUTPUT_DATA = ConfigurationManager.AppSettings.Get("data.output.location");
+            if (!PATH_EXCEL_OUTPUT_DATA.EndsWith("/") && !PATH_EXCEL_OUTPUT_DATA.EndsWith("\\")) PATH_EXCEL_OUTPUT_DATA = PATH_EXCEL_OUTPUT_DATA + "\\";
 
             SpreadsheetInfo.SetLicense("FREE-LIMITED-KEY");
 
@@ -119,8 +120,16 @@ namespace GAExamSchedule.Data.Writer
             SaveGroupsSchedule(schedule, courseClasses);
             SaveBranchsSchedule(schedule, courseClasses);
 
-            if (!PATH_EXCEL_OUTPUT_DATA.EndsWith("/")) PATH_EXCEL_OUTPUT_DATA = PATH_EXCEL_OUTPUT_DATA + "/";
-            _ef.Save($"{PATH_EXCEL_OUTPUT_DATA}{FILENAME_OUTPUT}");
+            DateTime _now = DateTime.Now;
+            string _nowDT = _now.ToString().Replace(":", "").Replace(".", "").Replace("/", "");
+            string _extension = ".xlsx";
+            if (FILENAME_OUTPUT.EndsWith(".xlsx") || FILENAME_OUTPUT.EndsWith(".xls")) {
+                _extension = FILENAME_OUTPUT.Substring(FILENAME_OUTPUT.LastIndexOf("."));
+                FILENAME_OUTPUT = FILENAME_OUTPUT.Replace(_extension, "");
+            }
+
+            string _fileName = $"{FILENAME_OUTPUT}-{_nowDT}{_extension}";
+            _ef.Save($"{PATH_EXCEL_OUTPUT_DATA}{_fileName}");
         }
 
         #endregion
