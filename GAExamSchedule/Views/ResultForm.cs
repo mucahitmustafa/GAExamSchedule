@@ -16,8 +16,6 @@ namespace GAExamSchedule.Views
     {
         #region Constants and Fields
 
-        private string PATH_EXCEL_OUTPUT_DATA;
-
         public static CreateDataGridViews _createGridView;
         public static Algorithm.Algorithm _algorithm;
         public static ThreadState _state = new ThreadState();
@@ -48,8 +46,6 @@ namespace GAExamSchedule.Views
         public ResultForm()
         {
             InitializeComponent();
-            PATH_EXCEL_OUTPUT_DATA = System.Configuration.ConfigurationManager.AppSettings.Get("data.output.location");
-            if (!PATH_EXCEL_OUTPUT_DATA.EndsWith("/") && !PATH_EXCEL_OUTPUT_DATA.EndsWith("\\")) PATH_EXCEL_OUTPUT_DATA = PATH_EXCEL_OUTPUT_DATA + "\\";
         }
 
         private void ResultForm_Load(object sender, EventArgs e)
@@ -162,6 +158,7 @@ namespace GAExamSchedule.Views
 
         private void btnStart_Click(object sender, EventArgs e)
         {
+            lblFitness.Text = "0.00000";
             _statisticsRecorder = new StatisticsRecorderBase();
             if (_state == ThreadState.Unstarted || _state == ThreadState.Stopped)
             {
